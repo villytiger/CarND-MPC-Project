@@ -3,6 +3,73 @@ Self-Driving Car Engineer Nanodegree Program
 
 ---
 
+## Write-up
+
+### The Model
+
+> Student describes their model in detail. This includes the state, actuators and update equations.
+
+In this project I used kinematic bicycle model for implementing Model Predictive Controller.
+
+The state of the model consists of:
+* x, y - coordinates of the vehicle;
+* psi - vehicle orientation;
+* v - velocity;
+* delta - steering value;
+* throttle - acceleration value;
+* cte - cross track error;
+* epsi - orientation error.
+
+Delta and throttle act as actuators. Steering angle varies between -25 and 25 degrees. Throttle may be between -1 and 1. Negative values are used as break. The goal on each step is to compute these values for the next tick.
+
+The following constraints are used in this model:
+
+x<sub>t+1</sub>=x<sub>t</sub>+v<sub>t</sub>∗cos(ψ<sub>t</sub>)∗dt
+
+y<sub>t+1</sub>=y<sub>t</sub>+v<sub>t</sub>∗sin(ψ<sub>t</sub>)∗dt
+
+ψ<sub>t+1</sub>=ψ<sub>t</sub>+v<sub>t</sub>/L<sub>f</sub>∗δ<sub>t</sub>∗dt
+
+v<sub>t+1</sub>=vt<sub>t</sub>+at∗dt
+
+cte<sub>t+1</sub>=f(x<sub>t</sub>)−yt<sub>t</sub>+(v<sub>t</sub>∗sin(eψ<sub>t</sub>)∗dt)
+
+eψ<sub>t+1</sub>=ψ<sub>t</sub>−ψdes<sub>t</sub>+(v<sub>t</sub>/L<sub>f</sub>∗δ<sub>t</sub>∗dt)
+
+### Timestep Length and Elapsed Duration (N & dt)
+
+> Student discusses the reasoning behind the chosen N (timestep length) and dt (elapsed duration between timesteps) values. Additionally the student details the previous values tried.
+
+While I tried to choose dt as small as possible, choosing dt smaller than 100ms (which is the latency between actuation commands) makes no sence. Because of some time gap between sending command and receiving next data I found that dt=150ms works better.
+
+N=10 means that controller predictes values for the next 1 second. This can be considered enough. I didn't find any improvement from larger values.
+
+### Polynomial Fitting and MPC Preprocessing
+
+> A polynomial is fitted to waypoints.
+
+I used algorithm from lections to fit polynomial. As suggested in lections polynomial with order=3 is enough for most of the roads.
+
+> If the student preprocesses waypoints, the vehicle state, and/or actuators prior to the MPC procedure it is described.
+
+On each step simulator sends coordinates relative to the global map. But model computations are much simpler in car coordinate system. So I transformed them in main.cpp:78.
+
+I also tranfromed speed sent by simulator from MPH to m/s for proper using it in model.
+
+### Model Predictive Control with Latency
+
+> The student implements Model Predictive Control that handles a 100 millisecond latency. Student provides details on how they deal with latency.
+
+In order to take into account the latency I added state prediction as the first step in my controller. I used constraints described above for state prediction.
+
+### Video
+
+Please find below video of the simulation at a speed of 70 mph.
+
+[![Video](https://img.youtube.com/vi/LA_QrH3OZ5Y/0.jpg)](https://youtu.be/LA_QrH3OZ5Y)
+
+---
+
 ## Dependencies
 
 * cmake >= 3.5
